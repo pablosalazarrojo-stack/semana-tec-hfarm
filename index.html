@@ -306,6 +306,9 @@ dialog.lb::backdrop { background: rgba(16, 18, 22, 0.85); }
 .credits { margin: 24px 0 0; font-size: 13px; color: var(--muted); }
 @media (max-width: 860px) { .trip { grid-template-columns: 1fr; } }
 
+.nav a, .top .btn, .brand { white-space: nowrap; }
+@media (max-width: 1180px) { .nav { display: none; } .brand { margin-left: auto; margin-right: auto; } }
+
 footer.foot { padding-block: 28px; font-size: 14px; color: var(--muted); }
 footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
 </style>
