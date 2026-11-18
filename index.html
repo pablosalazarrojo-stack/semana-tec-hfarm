@@ -309,6 +309,14 @@ dialog.lb::backdrop { background: rgba(16, 18, 22, 0.85); }
 .nav a, .top .btn, .brand { white-space: nowrap; }
 @media (max-width: 1180px) { .nav { display: none; } .brand { margin-left: auto; margin-right: auto; } }
 
+/* Video 16:9 sin recortes */
+.hero .wrap { align-items: center; }
+.hero-video { min-height: 0; width: 100%; aspect-ratio: 16 / 9; align-self: center; }
+.hero-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.video-wrap { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.video-cap { margin: 0; font-size: 14px; color: var(--muted); }
+@media (max-width: 860px) { .hero-video { min-height: 0; } .video-wrap { order: -1; } }
+
 footer.foot { padding-block: 28px; font-size: 14px; color: var(--muted); }
 footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
 </style>
@@ -348,11 +356,12 @@ footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-betwe
           <li><span class="hn">3</span><a href="https://docs.google.com/forms/d/e/1FAIpQLSfsb4Hv__Jb1E-U_1BBf0nXvgc21ownnc9jLJQK_ATe1ZIGVQ/viewform" target="_blank" rel="noopener">Registra tus pagos</a></li>
         </ol>
       </div>
-      <a class="hero-video" href="https://youtu.be/QSP_MyG4TGI" target="_blank" rel="noopener" aria-label="Ver el video «Welcome to H-FARM» en YouTube (3:19)">
-        <img src="img/yt-QSP_MyG4TGI.jpg" alt="">
-        <span class="play" aria-hidden="true"></span>
-        <span class="tag"><span><b>Video</b> · Welcome to H-FARM</span><span>3:19 · Ver en YouTube</span></span>
-      </a>
+      <div class="video-wrap">
+        <div class="hero-video">
+          <iframe src="https://www.youtube-nocookie.com/embed/QSP_MyG4TGI?rel=0" title="Welcome to H-FARM (video)" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+        <p class="video-cap">Video · Welcome to H-FARM (3:19) · <a href="https://youtu.be/QSP_MyG4TGI" target="_blank" rel="noopener">Ver en YouTube</a></p>
+      </div>
     </div>
   </section>
 
