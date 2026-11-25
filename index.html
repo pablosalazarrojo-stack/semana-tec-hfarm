@@ -919,5 +919,98 @@ footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-betwe
   }
 })();
 </script>
+<!-- Estadísticas: GoatCounter (tablero público de visitas) + registro propio en Google Sheet privada -->
+<script data-goatcounter="https://semanatec-hfarm.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<script>
+(function () {
+  var EP = 'https://script.google.com/macros/s/AKfycbwaR88-B6HneYPX1G785rh8edcFPbuDIUP4DjYnM6I1ABB9rJrwV6YEz6kNHzN9d_Er/exec';
+  function uid(k, store) { try { var v = store.getItem(k); if (!v) { v = Math.random().toString(36).slice(2) + Date.now().toString(36); store.setItem(k, v); } return v; } catch (e) { return 'sin-id'; } }
+  var q = new URLSearchParams(location.search);
+  var ref = 'directo';
+  try { if (document.referrer) { var h = new URL(document.referrer).hostname; ref = h === location.hostname ? 'misma página' : h; } } catch (e) {}
+  var ua = navigator.userAgent;
+  var nav = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : /Firefox\//.test(ua) ? 'Firefox' : 'Otro';
+  if (/WhatsApp/i.test(ua)) nav = 'WhatsApp';
+  if (/FBAN|FBAV|Instagram/i.test(ua)) nav = 'Facebook/Instagram';
+  var w = window.innerWidth;
+  var base = {
+    v: uid('st_visitante', localStorage), s: uid('st_sesion', sessionStorage), r: ref,
+    c: [q.get('utm_source'), q.get('utm_campaign'), q.get('v') ? 'v=' + q.get('v') : ''].filter(Boolean).join(' '),
+    dev: w < 700 ? 'celular' : (w < 1100 ? 'tablet' : 'computadora'), w: w,
+    l: navigator.language || '', tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || ''), p: location.pathname, b: nav
+  };
+  function send(events, beacon) {
+    if (EP.indexOf('https://') !== 0) return;
+    var body = JSON.stringify(Object.assign({}, base, { events: events }));
+    try {
+      if (beacon && navigator.sendBeacon) { navigator.sendBeacon(EP, new Blob([body], { type: 'text/plain' })); return; }
+      fetch(EP, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: body, keepalive: true });
+    } catch (e) {}
+  }
+  function gc(path, title) { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: path, title: title || path, event: true }); } catch (e) {} }
+  function track(e, d) { send([{ e: e, d: d || '' }]); gc(e + (d ? ' · ' + d : ''), d); }
+  window.stTrack = track;
+
+  send([{ e: 'visita', d: document.title }]);
+
+  /* Clics en botones, ligas, preguntas, días, fotos y perfiles */
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest('a, button, summary'); if (!a) return;
+    var h = a.getAttribute('href') || '';
+    var t = (a.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    var e = null, d = t;
+    if (h.indexOf('forms.gle') > -1) e = 'clic_registro';
+    else if (h.indexOf('docs.google.com/forms') > -1) e = 'clic_pagos';
+    else if (h.indexOf('chat.whatsapp.com') > -1) e = 'clic_comunidad_whatsapp';
+    else if (h.indexOf('wa.me') > -1) { e = 'clic_whatsapp_contacto'; d = h.replace('https://wa.me/', '+'); }
+    else if (h.indexOf('mailto:') === 0) { e = 'clic_correo'; d = h.replace('mailto:', ''); }
+    else if (h.indexOf('youtu') > -1) e = 'clic_youtube';
+    else if (a.tagName === 'SUMMARY') e = 'pregunta';
+    else if (a.closest('#days')) e = 'dia';
+    else if (a.closest('#gallery')) e = 'foto';
+    else if (a.closest('.person')) { e = 'perfil'; var n = a.querySelector('.nm'); d = n ? n.textContent : t; }
+    else if (a.closest('#steps')) { e = 'entregable'; var m = a.querySelector('.nm'); d = m ? m.textContent : t; }
+    else if (h.charAt(0) === '#') e = 'menu';
+    if (e) track(e, d);
+  }, true);
+
+  /* Calculadora de pagos */
+  var rng = document.getElementById('paid'); var rngT;
+  if (rng) rng.addEventListener('input', function () { clearTimeout(rngT); rngT = setTimeout(function () { track('calculadora', rng.value + ' pagos'); }, 1200); });
+
+  /* Reproducción del video: el foco pasa al iframe de YouTube */
+  window.addEventListener('blur', function () {
+    setTimeout(function () { var el = document.activeElement; if (el && el.tagName === 'IFRAME') track('video', 'Welcome to H-FARM'); }, 0);
+  });
+
+  /* Secciones que la persona alcanza a ver */
+  if ('IntersectionObserver' in window) {
+    var seen = {};
+    var io = new IntersectionObserver(function (ents) {
+      ents.forEach(function (en) {
+        var id = en.target.id;
+        if (en.isIntersecting && !seen[id]) { seen[id] = 1; send([{ e: 'seccion', d: id }]); }
+      });
+    }, { threshold: 0.35 });
+    document.querySelectorAll('section[id]').forEach(function (s) { io.observe(s); });
+  }
+
+  /* Tiempo en la página y qué tanto bajó */
+  var maxSc = 0, visibleMs = 0, since = Date.now(), sent = false;
+  window.addEventListener('scroll', function () {
+    var d = document.documentElement; var pct = Math.round((window.scrollY + window.innerHeight) / d.scrollHeight * 100);
+    if (pct > maxSc) maxSc = Math.min(pct, 100);
+  }, { passive: true });
+  function bye() {
+    if (sent) return; sent = true;
+    visibleMs += Date.now() - since;
+    send([{ e: 'salida', d: '', t: Math.round(visibleMs / 1000), sc: maxSc }], true);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') bye(); else { since = Date.now(); }
+  });
+  window.addEventListener('pagehide', bye);
+})();
+</script>
 </body>
 </html>
