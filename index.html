@@ -1026,7 +1026,7 @@ footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-betwe
         var id = en.target.id;
         if (en.isIntersecting && !seen[id]) { seen[id] = 1; send([{ e: 'seccion', d: id }]); }
       });
-    }, { threshold: 0.35 });
+    }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 }); /* cuenta la sección cuando llega al centro de la pantalla, aunque sea muy larga */
     document.querySelectorAll('section[id]').forEach(function (s) { io.observe(s); });
   }
 
